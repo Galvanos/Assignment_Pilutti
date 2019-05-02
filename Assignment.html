@@ -1,0 +1,59 @@
+<html>
+    <head>
+        <title>Daily quotes</title>
+
+    </head>
+    <body>
+        
+        <script>
+            var S = "default";
+            var doc;
+            var x;           
+            
+            function submit() {
+                var xhr = new XMLHttpRequest();
+                xhr.onreadystatechange = function () {
+                    if (xhr.readyState === 4) {
+                        alert(xhr.response);
+                        S = xhr.responseText;
+                        doc = new DOMParser().parseFromString(S, "text/xml");
+                        Fill();
+                    }
+                }
+                xhr.open('get', 'http://quotes.rest/qod?category=inspire', true);
+                xhr.send();
+            }
+            
+            var phrase;
+            var author;
+
+            function Fill() {
+                var NQuote = S.search('quote":');
+                var NAuthor = S.search('author":');
+                var NLength = S.search('length":');
+                phrase = S.substring( NQuote+8 , NAuthor-19 );
+                author = S.substring( NAuthor+9 , NLength-19 );
+            }
+
+            function declaring(){
+                console.log( phrase, "\n", author );
+            }
+
+            function trial(){
+                x = doc.getElementsByTagName("quote").childNodes[0].nodeValue;
+                console.log( x );
+            }
+        
+        </script>
+
+    <h5>Press to see the quote of the day:</h5>
+    <input type="submit" value="Start" onclick="submit()">
+
+    <input type="submit" value="Gimme" onclick="declaring()">
+
+    <input type="submit" value="Trial" onclick="trial()">
+
+
+    </body>
+
+</html>
