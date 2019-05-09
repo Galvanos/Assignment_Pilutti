@@ -2,17 +2,21 @@
 <html>
     <head>
         <Title>Daily Quotes</Title>
+        <script>
+            function noenter() {
+              return !(window.event && window.event.keyCode == 13); }
+            </script>
     </head>
     <body onload="menus()">
 
         <h2>Task 1</h2>
         <h3>Possible categories:</h3>
-        <h4>Inspire, Management, Sports, Life, Funny, Love, Art, Students</h4>
+        <h4>"inspire", "management", "sports", "life", "funny", "love", "art", "students"</h4>
         <form class="well" name="formInput" >
             <label>Category:</label>
-            <input Id="txtvarInput" type="text" placeholder="Inspire" />
+            <input Id="txtvarInput" type="text" placeholder="inspire" onkeypress="return noenter()"/>
                 <script>
-                    var cat = document.getElementById('txtvarInput');
+                    var text = document.getElementById('txtvarInput');
                 </script>
         </form>
         
@@ -23,7 +27,8 @@
 
 
         <script>
-            var doc;  
+            var doc;
+            var debug;
 
             function menus(){
                 menuSetup();
@@ -32,25 +37,26 @@
 
             function submit() {
                 var xhr = new XMLHttpRequest();
-                xhr.onreadystatechange = function () {
-                    if (xhr.status === 429 ){
-                        document.getElementById("quote1").innerHTML = "Error: too many requests. Please wait an hour before retrying";
-                    } else if (xhr.readyState === 4) {
-                        doc = xhr.responseXML;
-                        document.getElementById("quote1").innerHTML ='"' + doc.getElementsByTagName("quote")[0].childNodes[0].nodeValue + '"';
-                        document.getElementById("author1").innerHTML = doc.getElementsByTagName("author")[0].childNodes[0].nodeValue;
+                var str = text.value; 
+                var cat = str.toLowerCase();
+                if( cat == "inspire" || cat == "management" || cat == "sports" || cat == "life" || cat == "funny" || cat == "love" || cat == "art" || cat == "students" ){
+                    xhr.onreadystatechange = function () {
+                        debug = xhr;
+                        if (xhr.status === 429 ){
+                            document.getElementById("quote1").innerHTML = "Error 429: Too many requests. Please wait an hour before retrying";
+                        } else if (xhr.readyState === 4) {
+                            doc = xhr.responseXML;
+                            document.getElementById("quote1").innerHTML ='"' + doc.getElementsByTagName("quote")[0].childNodes[0].nodeValue + '"';
+                            document.getElementById("author1").innerHTML = doc.getElementsByTagName("author")[0].childNodes[0].nodeValue;
+                        }
                     }
+                    xhr.open('get', 'http://quotes.rest/qod?category='+cat, true);
+                    xhr.setRequestHeader("Accept", "text/html,application/xhtml+xml,application/xml");
+                    xhr.send();
+                } else {
+                    document.getElementById("quote1").innerHTML = "Error: invalid category.";
+                    document.getElementById("author1").innerHTML = "";
                 }
-                xhr.open('get', 'http://quotes.rest/qod?category='+cat.value, true);
-                xhr.setRequestHeader("Accept", "text/html,application/xhtml+xml,application/xml");
-                xhr.send();
-            }
-
-            function display(){ //funzione usata durante lo sviluppo ma assente nella versione finale.
-                var x = doc.getElementsByTagName("quote")[0].childNodes[0].nodeValue;
-                console.log( x );
-                var y = doc.getElementsByTagName("author")[0].childNodes[0].nodeValue;
-                console.log( y );
             }
 
         </script>
@@ -61,18 +67,10 @@
 
         <form>
             <label>Categories:</label>
-            <select name="categories" id="cat">
-                <option value="" id="c1">-</option>
-                <option value="" id="c2">-</option>
-                <option value="" id="c3">-</option>
-                <option value="" id="c4">-</option>
-                <option value="" id="c5">-</option>
-                <option value="" id="c6">-</option>
-                <option value="" id="c7">-</option>
-                <option value="" id="c8">-</option>
+            <select name="categories" id="c">
             </select>
             <script>
-            var cat2 = document.getElementById("cat");
+            var cat2 = document.getElementById("c");
             </script>
         </form>
 
@@ -84,16 +82,28 @@
         <script>
             var catpage;
 
+            function menuCreation( dropDown, index ){
+                var menu = document.getElementById( dropDown );
+                var df = document.createDocumentFragment();
+                for (var i = 1; i <= index; i++ ){
+                    var option = document.createElement('option');
+                    option.value = "";
+                    option.id = dropDown + i;
+                    option.appendChild(document.createTextNode("option #" + i));
+                    df.appendChild(option);
+                }
+                menu.appendChild(df);
+            }
+
             function submit2() {
                 var xhr = new XMLHttpRequest();
                 xhr.onreadystatechange = function () {
                     if (xhr.status === 429){
-                        document.getElementById("quote2").innerHTML = "Error: too many requests. Please wait an hour before retrying";
+                        document.getElementById("quote2").innerHTML = "Error 429: too many requests. Please wait an hour before retrying";
                     } else if (xhr.readyState === 4) {
                         doc = xhr.responseXML;
                         document.getElementById("quote2").innerHTML = '"' + doc.getElementsByTagName("quote")[0].childNodes[0].nodeValue + '"';
                         document.getElementById("author2").innerHTML = doc.getElementsByTagName("author")[0].childNodes[0].nodeValue;
-                        //display();
                     }
                 }
                 xhr.open('get', 'http://quotes.rest/qod?category='+cat2.value, true);
@@ -105,11 +115,13 @@
                 var xhr = new XMLHttpRequest();
                 xhr.onreadystatechange = function () {
                     if (xhr.status === 429){
-                        document.getElementById("quote3").innerHTML = "Error: too many requests. Please wait an hour before retrying";
+                        document.getElementById("quote3").innerHTML = "Error 429: too many requests. Please wait an hour before retrying";
                     } else if (xhr.readyState === 4) {
-                        catpage = xhr.responseXML;      // error 429 = too many requests.
+                        catpage = xhr.responseXML;
+                        var n = catpage.getElementsByTagName("total")[0].childNodes[0].nodeValue;
                         var x = catpage.getElementsByTagName("categories")[0];
-                        for(var i = 1; i < 9; i++){
+                        menuCreation( "c", n );
+                        for(var i = 1; i <= n; i++){
                             document.getElementById("c" + i).innerHTML = x.childNodes[ 2*i-1 ].textContent;
                             document.getElementById("c" + i).setAttribute("value", x.childNodes[ 2*i-1 ].tagName);
                         }
@@ -128,18 +140,10 @@
 
         <form>
             <label>Categories:</label>
-            <select name="categories" id="cat2" onchange="submit3()">
-                <option value="" id="b1">-</option>
-                <option value="" id="b2">-</option>
-                <option value="" id="b3">-</option>
-                <option value="" id="b4">-</option>
-                <option value="" id="b5">-</option>
-                <option value="" id="b6">-</option>
-                <option value="" id="b7">-</option>
-                <option value="" id="b8">-</option>
+            <select name="categories" id="b" onchange="submit3()">
             </select>
             <script>
-            var cat3 = document.getElementById("cat2");
+            var cat3 = document.getElementById("b");
             </script>
         </form>
 
@@ -154,9 +158,11 @@
                     if (xhr.status === 429){
                         document.getElementById("quote3").innerHTML = "Error: too many requests. Please wait an hour before retrying";
                     } else if (xhr.readyState === 4) {
-                        catpage = xhr.responseXML;      // error 429 = too many requests.
+                        catpage = xhr.responseXML;
+                        var n = catpage.getElementsByTagName("total")[0].childNodes[0].nodeValue;
                         var x = catpage.getElementsByTagName("categories")[0];
-                        for(var i = 1; i < 9; i++){
+                        menuCreation( "b", n );
+                        for(var i = 1; i <= n; i++){
                             document.getElementById("b" + i).innerHTML = x.childNodes[ 2*i-1 ].textContent;
                             document.getElementById("b" + i).setAttribute("value", x.childNodes[ 2*i-1 ].tagName);
                         }
@@ -173,10 +179,9 @@
                     if (xhr.status === 429){
                         document.getElementById("quote3").innerHTML = "Error: too many requests. Please wait an hour before retrying";
                     } else if (xhr.readyState === 4) {
-                        doc = xhr.responseXML;      // error 429 = too many requests.
+                        doc = xhr.responseXML;
                         document.getElementById("quote3").innerHTML = '"' + doc.getElementsByTagName("quote")[0].childNodes[0].nodeValue + '"';
                         document.getElementById("author3").innerHTML = doc.getElementsByTagName("author")[0].childNodes[0].nodeValue;
-                        //display();
                     }
                 }
                 xhr.open('get', 'http://quotes.rest/qod?category='+cat3.value, true);
