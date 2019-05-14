@@ -3,7 +3,7 @@
     <head>
         <Title>Daily Quotes</Title>
         <script>
-            function noenter() {
+            function noenter() { // funzione usata per evitare che la pagina ricarichi quando si preme "invio" con il cursore nella box di inserimento testo
               return !(window.event && window.event.keyCode == 13); }
             </script>
     </head>
@@ -12,25 +12,24 @@
         <h2>Task 1</h2>
         <h3>Possible categories:</h3>
         <h4>"inspire", "management", "sports", "life", "funny", "love", "art", "students"</h4>
-        <form class="well" name="formInput" >
+        <form>
             <label>Category:</label>
             <input Id="txtvarInput" type="text" placeholder="inspire" onkeypress="return noenter()"/>
                 <script>
-                    var text = document.getElementById('txtvarInput');
+                    var text = document.getElementById('txtvarInput'); //alla variabile text viene assegnato il valore del contenuto della text box
                 </script>
         </form>
         
         <h4>Press to submit your choice and see the quote of the day:</h4>
         <input type="submit" value="Submit choice" onclick="submit()">
-        <p id="quote1">"..."</p>
+        <p id="quote1">"..."</p> <!-- paragrafi vuoti che vengono modificati dalle funzioni javascript -->
         <p id="author1"></p>
 
 
         <script>
             var doc;
-            var debug;
 
-            function menus(){
+            function menus(){ // funzione che viene lanciata quando la pagina viene caricata, riempie i menu a tendina con le categorie
                 menuSetup();
                 menuSetup2();
             }          
@@ -38,23 +37,22 @@
             function submit() {
                 var xhr = new XMLHttpRequest();
                 var str = text.value; 
-                var cat = str.toLowerCase();
+                var cat = str.toLowerCase(); //variabile che contiene il valore inserito nella textbox, tutto in minuscolo
                 if( cat == "inspire" || cat == "management" || cat == "sports" || cat == "life" || cat == "funny" || cat == "love" || cat == "art" || cat == "students" ){
                     xhr.onreadystatechange = function () {
-                        debug = xhr;
                         if (xhr.status === 429 ){
                             document.getElementById("quote1").innerHTML = "Error 429: Too many requests. Please wait an hour before retrying";
                         } else if (xhr.readyState === 4) {
-                            doc = xhr.responseXML;
+                            doc = xhr.responseXML; //assegnazione del documento XML ottenuto con la risposta del sito alla variabile doc
                             document.getElementById("quote1").innerHTML ='"' + doc.getElementsByTagName("quote")[0].childNodes[0].nodeValue + '"';
                             document.getElementById("author1").innerHTML = doc.getElementsByTagName("author")[0].childNodes[0].nodeValue;
                         }
                     }
                     xhr.open('get', 'http://quotes.rest/qod?category='+cat, true);
-                    xhr.setRequestHeader("Accept", "text/html,application/xhtml+xml,application/xml");
+                    xhr.setRequestHeader("Accept", "text/html,application/xhtml+xml,application/xml"); // questa riga è necessaria per ricevere la risposta in formato documento XML
                     xhr.send();
                 } else {
-                    document.getElementById("quote1").innerHTML = "Error: invalid category.";
+                    document.getElementById("quote1").innerHTML = "Error: invalid category."; //output nel caso la categoria inserita sia invalida
                     document.getElementById("author1").innerHTML = "";
                 }
             }
@@ -67,10 +65,10 @@
 
         <form>
             <label>Categories:</label>
-            <select name="categories" id="c">
+            <select name="categories" id="c"> <!-- menu a tendina vuoto che viene riempito dinamicamente dalle funzioni -->
             </select>
             <script>
-            var cat2 = document.getElementById("c");
+            var cat2 = document.getElementById("c"); //alla variabile cat2 viene assegnato il menu a tendina 
             </script>
         </form>
 
@@ -82,9 +80,9 @@
         <script>
             var catpage;
 
-            function menuCreation( dropDown, index ){
+            function menuCreation( dropDown, index ){ // funziona che crea n opzioni per il menu a tendina, dove n è il numero di categorie specificate dal tag "total" nella pagina "categories" 
                 var menu = document.getElementById( dropDown );
-                var df = document.createDocumentFragment();
+                var df = document.createDocumentFragment();//creazione di un document fragment a cui vengono "appendati" gli option creati nel loop
                 for (var i = 1; i <= index; i++ ){
                     var option = document.createElement('option');
                     option.value = "";
@@ -92,7 +90,7 @@
                     option.appendChild(document.createTextNode("option #" + i));
                     df.appendChild(option);
                 }
-                menu.appendChild(df);
+                menu.appendChild(df); //il document fragment viene "appendato" al menu vuoto (con tutti i suoi Child)
             }
 
             function submit2() {
@@ -107,23 +105,23 @@
                     }
                 }
                 xhr.open('get', 'http://quotes.rest/qod?category='+cat2.value, true);
-                xhr.setRequestHeader("Accept", "text/html,application/xhtml+xml,application/xml");
+                xhr.setRequestHeader("Accept", "text/html,application/xhtml+xml,application/xml"); // questa riga è necessaria per ricevere la risposta in formato documento XML
                 xhr.send();
             }
             
             function menuSetup() {
                 var xhr = new XMLHttpRequest();
                 xhr.onreadystatechange = function () {
-                    if (xhr.status === 429){
+                    if (xhr.status === 429){ // se ci sono state troppe richieste al server si verifica questa condizione
                         document.getElementById("quote3").innerHTML = "Error 429: too many requests. Please wait an hour before retrying";
                     } else if (xhr.readyState === 4) {
                         catpage = xhr.responseXML;
                         var n = catpage.getElementsByTagName("total")[0].childNodes[0].nodeValue;
                         var x = catpage.getElementsByTagName("categories")[0];
-                        menuCreation( "c", n );
+                        menuCreation( "c", n ); // viene lanciata la funzione per creare le voci vuote del menu
                         for(var i = 1; i <= n; i++){
-                            document.getElementById("c" + i).innerHTML = x.childNodes[ 2*i-1 ].textContent;
-                            document.getElementById("c" + i).setAttribute("value", x.childNodes[ 2*i-1 ].tagName);
+                            document.getElementById("c" + i).innerHTML = x.childNodes[ 2*i-1 ].textContent; //ad ogni elemento del select viene assegnato una didascalia...
+                            document.getElementById("c" + i).setAttribute("value", x.childNodes[ 2*i-1 ].tagName);//... ed un valore associato, presi dalla pagina delle categorie
                         }
                     }
                 }
@@ -140,7 +138,7 @@
 
         <form>
             <label>Categories:</label>
-            <select name="categories" id="b" onchange="submit3()">
+            <select name="categories" id="b" onchange="submit3()"> <!-- La funzione submit3 viene eseguita al cambio del valore del menu invece che al premere del bottone, per il resto è pressochè uguale al task 2 -->
             </select>
             <script>
             var cat3 = document.getElementById("b");
